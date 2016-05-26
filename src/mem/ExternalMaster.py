@@ -37,6 +37,7 @@
 #          Curtis Dunham
 
 from m5.params import *
+from m5.proxy import *
 from MemObject import MemObject
 
 class ExternalMaster(MemObject):
@@ -50,3 +51,5 @@ class ExternalMaster(MemObject):
     port_data = Param.String('stub', 'A string to pass to the port'
         ' handler (in a format specific to the handler) to describe how'
         ' the port should be bound/bindable/discoverable')
+
+    system = Param.System(Parent.any, 'System this external port belongs to')

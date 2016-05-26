@@ -129,6 +129,8 @@ class ExternalMaster : public MemObject
         Handler *handler);
 
     void init();
+
+    const MasterID masterId;
 };
 
 
