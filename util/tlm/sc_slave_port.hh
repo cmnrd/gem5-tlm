@@ -2,6 +2,9 @@
  * Copyright (c) 2015, University of Kaiserslautern
  * All rights reserved.
  *
+ * Copyright (c) 2016, TU Dresden
+ * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
@@ -30,6 +33,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * Authors: Matthias Jung
+ *          Christian Menard
  */
 
 #ifndef __SIM_SC_TRANSACTOR_HH__
@@ -42,6 +46,7 @@
 #include <tlm>
 
 #include "mem/external_slave.hh"
+#include "payload_event.hh"
 #include "sc_mm.hh"
 #include "sc_module.hh"
 
@@ -55,73 +60,16 @@ namespace Gem5SystemC
 } while (0)
 
 
-class sc_transactor : public tlm::tlm_initiator_socket<>,
+class SlavePort : public tlm::tlm_initiator_socket<>,
         public tlm::tlm_bw_transport_if<>,
         public ExternalSlave::Port
 {
   public:
-    sc_transactor &iSocket;
-
-    /**
-     * A 'Fake Payload Event Queue', similar to the TLM PEQs. This will help
-     * that gem5 behaves like a normal TLM Initiator
-     */
-    template<typename OWNER>
-    class payloadEvent : public Event
-    {
-        public:
-        OWNER &port;
-        const std::string eventName;
-        void (OWNER::* handler)(payloadEvent<OWNER> * pe,
-            tlm::tlm_generic_payload& trans,
-            const tlm::tlm_phase &phase);
-
-        protected:
-        tlm::tlm_generic_payload *t;
-        tlm::tlm_phase p;
-
-        void process() { (port.*handler)(this,*t, p); }
-
-        public:
-        const std::string name() const { return eventName; }
-
-        payloadEvent(
-            OWNER &port_,
-            void (OWNER::* handler_)(payloadEvent<OWNER> * pe,
-                tlm::tlm_generic_payload& trans,
-                const tlm::tlm_phase &phase),
-            const std::string &event_name) :
-            port(port_),
-            eventName(event_name),
-            handler(handler_)
-        { }
-
-        /// Schedule an event into gem5
-        void
-        notify(tlm::tlm_generic_payload& trans,
-           const tlm::tlm_phase &phase,
-           const sc_core::sc_time& delay)
-        {
-            assert(!scheduled());
-
-            t = &trans;
-            p = phase;
-
-            /**
-             * Get time from SystemC as this will alway be more up to date
-             * than gem5's
-             */
-            Tick nextEventTick = sc_core::sc_time_stamp().value()
-                + delay.value();
-
-            port.owner.wakeupEventQueue(nextEventTick);
-            port.owner.schedule(this, nextEventTick);
-       }
-    };
+    SlavePort &iSocket;
 
     /** One instance of pe and the related callback needed */
-    //payloadEvent<sc_transactor> pe;
-    void pec(payloadEvent<sc_transactor> * pe,
+    //payloadEvent<SlavePort> pe;
+    void pec(PayloadEvent<SlavePort> * pe,
         tlm::tlm_generic_payload& trans, const tlm::tlm_phase& phase);
 
     /**
@@ -160,14 +108,14 @@ class sc_transactor : public tlm::tlm_initiator_socket<>,
                                    sc_dt::uint64 end_range);
 
   public:
-    sc_transactor(const std::string &name_,
-           const std::string &systemc_name,
-           ExternalSlave &owner_);
+    SlavePort(const std::string &name_,
+              const std::string &systemc_name,
+              ExternalSlave &owner_);
+
+    static void registerPortHandler();
+
+    friend PayloadEvent<SlavePort>;
 };
-
-void registerPort(const std::string &name, Port &port);
-
-void registerSCPorts();
 
 }
 
