@@ -60,6 +60,7 @@
 #include "base/trace.hh"
 #include "cpu/base.hh"
 #include "sc_logger.hh"
+#include "sc_master_port.hh"
 #include "sc_module.hh"
 #include "sc_slave_port.hh"
 #include "sim/cxx_config_ini.hh"
@@ -109,6 +110,7 @@ SimControl::SimControl(sc_core::sc_module_name name, int argc_, char** argv_)
 
     cxxConfigInit();
     Gem5SystemC::SlavePort::registerPortHandler();
+    Gem5SystemC::MasterPort::registerPortHandler(*this);
 
     Trace::setDebugLogger(&logger);
 

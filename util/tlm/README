@@ -6,14 +6,20 @@ system example.
 Files:
 
     sc_slave_port.{cc,hh}   -- transactor that translates beween gem5 and tlm
+    sc_master_port.{cc,hh}  -- transactor that translates beween tlm and gem5
     sc_mm.{cc,hh}           -- implementation of a tlm memory manager
     sc_ext.{cc,hh}          -- a TLM extension that carries the gem5 packet
+    sim_control.{cc,hh}     -- Central module that manages SystemC/gem5
+                               co-simulation
 
     example/slave_port/main.cc           -- demonstration of the slave port
     example/slave_port/sc_target.{cc,hh} -- an example TLM LT/AT memory module
     example/slave_port/tlm.py            -- simple gem5 configuration
     example/slave_port/tgen.cfg          -- configuration file for the
                                             traceplayer
+
+    example/master_port/main.cc          -- demonstration of the master port
+    example/master_port/tlm.py           -- simple gem5 configuration
 
 Other Files will be used from utils/systemc example:
 
@@ -23,8 +29,8 @@ Other Files will be used from utils/systemc example:
     stats.{cc,hh}
 
 
-I. Traffic Generator Setup
-==========================
+I. Slave Port: Traffic Generator Setup
+======================================
 
 To build:
 
@@ -69,8 +75,8 @@ To see more information about the port coupling use:
 
 > ./gem5.opt.sc m5out/config.ini -e 1000000 -d ExternalPort
 
-II. Full System Setup
-=====================
+II. Slave Port: Full System Setup
+=================================
 
 Build gem5 as discribed in Section I. Then, make a config file for the
 C++-configured gem5 using normal gem5
@@ -98,9 +104,8 @@ The system should boot now.
 
 For conveniance a run_gem5.sh file holds all those commands
 
-
-III. Elastic Trace Setup
-========================
+III. Slave Port: Elastic Trace Setup
+====================================
 
 Elastic traces can also be replayed into the SystemC world.
 For more information on elastic traces please refer to:
@@ -120,3 +125,32 @@ Similar to I. the simulation can be set up with this command:
 Then:
 
 > ./gem5.opt.sc m5out/config.ini
+
+IV. Master Port: Traffic Generator Setup
+========================================
+
+Build normal gem5 and the gem5 library (see I).
+
+> cd examples/master_port
+
+Set a proper LD_LIBRARY_PATH e.g. for bash:
+> export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/path/to/gem5/build/ARM/"
+
+Then edit the Makefile to set the paths for SystemC and run make
+
+> make
+
+Similar to I. the simulation can be set up with this command:
+
+> ../../../../build/ARM/gem5.opt ./tlm.py
+
+The message "fatal: Can't find port handler type 'tlm_master'" is okay.
+The configuration will be stored in the m5out/ directory
+
+Then run the suimulation:
+
+> ./gem5.opt.sc m5out/config.ini
+
+To see more information use debug flags, i.e. XBar or MemoryAccess
+
+> ./gem5.opt.sc m5out/config.ini -d XBar -d MemoryAccess

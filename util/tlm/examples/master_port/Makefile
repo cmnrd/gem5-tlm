@@ -1,24 +1,21 @@
-# Copyright (c) 2015, University of Kaiserslautern
-# All rights reserved.
-# 
 # Copyright (c) 2016, TU Dresden
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
 # met:
-# 
+#
 # 1. Redistributions of source code must retain the above copyright notice,
 #    this list of conditions and the following disclaimer.
-# 
+#
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 
+#
 # 3. Neither the name of the copyright holder nor the names of its
 #    contributors may be used to endorse or promote products derived from
 #    this software without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 # TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
@@ -30,14 +27,12 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-# 
-# Authors: Matthias Jung
+#
 # Authors: Christian Menard
 
 
 ARCH = ARM
 VARIANT = opt
-#VARIANT = debug
 
 SYSTEMC_INC = /opt/systemc/include
 SYSTEMC_LIB = /opt/systemc/lib-linux
@@ -69,13 +64,14 @@ sc_logger.o: ../../../systemc/sc_logger.cc ../../../systemc/sc_logger.hh
 sc_module.o: ../../../systemc/sc_module.cc ../../../systemc/sc_module.hh
 sc_mm.o: ../../sc_mm.cc ../../sc_mm.hh
 sc_ext.o: ../../sc_ext.cc ../../sc_ext.hh
-sc_slave_port.o: ../../sc_slave_port.cc ../../sc_slave_port.hh \
+sc_master_port.o: ../../sc_master_port.cc ../../sc_master_port.hh \
 	../../payload_event.hh
 sc_master_port.o: ../../sc_master_port.cc ../../sc_master_port.hh \
 	../../payload_event.hh
-sc_target.o: sc_target.cc sc_target.hh
+sc_slave_port.o: ../../sc_slave_port.cc ../../sc_slave_port.hh \
+	../../payload_event.hh
 stats.o: ../../../systemc/stats.cc ../../../systemc/stats.hh
-sim_control.o: ../../sim_control.cc ../../sim_control.hh \
+sim_control.o: ../../sim_control.cc ../../sim_control.hh ../../ \
 	../../sc_slave_port.hh ../../sc_master_port.hh
 main.o: main.cc ../../../systemc/sc_logger.hh ../../../systemc/sc_module.hh \
 	../../../systemc/stats.hh
@@ -83,8 +79,7 @@ main.o: main.cc ../../../systemc/sc_logger.hh ../../../systemc/sc_module.hh \
 gem5.$(VARIANT).sc: main.o ../../../systemc/stats.o \
 	../../../systemc/sc_gem5_control.o ../../../systemc/sc_logger.o \
 	../../../systemc/sc_module.o ../../sc_mm.o ../../sc_ext.o \
-	../../sc_slave_port.o ../../sc_master_port.o ../../sim_control.o \
-	sc_target.o
+	../../sc_slave_port.o ../../sc_master_port.o ../../sim_control.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
 clean:
